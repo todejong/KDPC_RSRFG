@@ -5,9 +5,8 @@ from scipy.io import savemat
 from sklearn.model_selection import train_test_split
 
 # Hyper parameters
-T_ini = 3
-n_basis = 5
-T = 1000
+T_ini = 5
+n_basis = 10
 in_features = T_ini * 2
 out_features = n_basis
 N = 10
@@ -43,6 +42,7 @@ y_data = torch.FloatTensor(y_data)
 
 print(f"u_data = {(u_data).shape}")
 print(f"y_data = {y_data.shape}")
+print(f"len(y_data) = {len(y_data)}")
 
 U_ini = torch.transpose(u_data[0 : T_ini - 1], 0, 1)
 U_0_Nm1 = torch.transpose(u_data[T_ini - 1 : T_ini + N - 1], 0, 1)
@@ -51,7 +51,7 @@ Y_ini = torch.transpose(y_data[0:T_ini], 0, 1)
 Y_1_N = torch.transpose(y_data[T_ini : T_ini + N], 0, 1)
 
 
-for i in range(T - T_ini - 1 - N):
+for i in range(len(y_data) - T_ini - 1 - N):
     if i < 100:
         print(i)
     U_ini = torch.cat((U_ini, torch.transpose(u_data[i + 1 : T_ini + i], 0, 1)), 0)

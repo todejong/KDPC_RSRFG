@@ -11,11 +11,11 @@ Range = [-4,4]
 SineData = [25, 40, 1]
 Band = [0, 1]
 NumPeriod = 1
-Period = 1000
+Period = 1500
 Nu = 1
 
 u_data = idinput([Period 1 NumPeriod],'sine',Band,Range,SineData)';
-% u_data = idinput([Period 1 NumPeriod],'prbs',Band,Range,SineData)';
+% u_data = [u_data, idinput([Period 1 NumPeriod],'prbs',Band,Range,SineData)']
 % u_data = zeros(1,length(u_data))
 
 x1 = 0

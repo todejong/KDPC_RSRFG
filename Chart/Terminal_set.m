@@ -1,15 +1,6 @@
 %% N-step ahead predictor
 clc; close all; clear all;
 
-
-
-fs = 100;                    % Sampling frequency (samples per second)
-dt = 1/fs;                   % seconds per sample
-StopTime = 1;                % seconds
-t = (0:dt:StopTime)';        % seconds
-F = 1;                       % Sine wave frequency (hertz)
-
-
 % use this for noiseless case
 load('u_data.mat')
 load('y_data.mat')
@@ -146,4 +137,4 @@ max(abs(eig(A+B*K)))
 MN = InvSet.A
 bN = InvSet.b
 
-save('invariant.mat',"Theta","A","B","K","bN","MN","P","Q","R")
+save('invariant.mat',"Theta","A","B","K","bN","MN")

@@ -7,31 +7,17 @@ hd = 1.1
 Ts = 1/30;
 
 r = 0*ones(200,1)
-Tini = 3
+Tini = 5
 
-Q = 10; 
-R=  1;
+Q = 1; 
+R=  0.001;
 P = 1000;
-lambda = 1e+7;
-
-% use this for noiseless case
 
 %%
 N = 10; %prediction horizon
 k_sim = length(r)-N;
-Phi = []; Y = [];
 
 %% recompute Theta 
-% for i = 1:length(u_data)-T_ini-N
-% U(:,i) = u_data(i:T_ini+N+i-1);
-% Y(:,i) = y_data(i+1:T_ini+i+N);
-% end
-% Up = U(1:T_ini,:)
-% Uf = U(T_ini+1:end ,:)
-% Yp = Y(1:T_ini,:)
-% Yf = Y(T_ini+1:end ,:)
-
-
 load('X_train.mat')
 load('y_train.mat')
 
@@ -79,9 +65,7 @@ controller = optimizer(constraints, objective, options, Parameters, Outputs);
 %% initial conditions
 ySPC(1) = -0.3;
 xx1(1) = ySPC(1);
-omega = -0.2;
-xx2(1) = omega;
-u_mpc = 0;
+xx2(1) = -0.2;
 uSPC = [];
 th=[];
 NL_part_all = [];
