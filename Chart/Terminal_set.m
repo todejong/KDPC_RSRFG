@@ -1,19 +1,14 @@
 %% N-step ahead predictor
 clc; close all; clear all;
 
-n_basis = 8;
+
 
 fs = 100;                    % Sampling frequency (samples per second)
 dt = 1/fs;                   % seconds per sample
 StopTime = 1;                % seconds
 t = (0:dt:StopTime)';        % seconds
 F = 1;                       % Sine wave frequency (hertz)
-r = 0.5 + sin(2*pi*F*t);           % Reference
-r = 0*ones(length(r),1)
 
-
-Q = 10*eye(n_basis); 
-R=  1;
 
 % use this for noiseless case
 load('u_data.mat')
@@ -27,34 +22,31 @@ load('weight3.mat')
 weights = struct('weight1',weight1,'weight2',weight2,'weight3',weight3);
 
 
+
 %%
+n_basis = length(weight1(:,1));
+Tini = (length(weight1(1,:))+1)/2;
+Q = 10*eye(n_basis); 
+R=  1;
+
 N = 10; %prediction horizon
-k_sim = length(r)-N;
 Phi = []; Y = [];
+
+y_ini = ones(Tini,1)*y_data(1)
+u_ini = zeros(Tini-1,1)
 
 %% recompute Theta 
 for i = 1:length(y_data)-N;
 if i == 1
-y_ini = [0;0;0;0; y_data(i)];
-u_ini = [0;0;0;0];
+y_ini = [y_ini(2:end);y_data(i)];
+u_ini = u_ini;
 end
-if i == 2 
-y_ini = [0;0;0;y_data(i-1); y_data(i)];
-u_ini = [0;0;0;u_data(i-1)];
+if i >= 2 
+y_ini = [y_ini(2:end);y_data(i)];
+u_ini = [u_ini(2:end);u_data(i-1)];
 end
-if i == 3 
-y_ini = [0;0;y_data(i-2);y_data(i-1); y_data(i)];
-u_ini = [0;0;u_data(i-2);u_data(i-1)];
-end
-if i == 4 
-y_ini = [0;y_data(i-3);y_data(i-2);y_data(i-1); y_data(i)];
-u_ini = [0;u_data(i-3);u_data(i-2);u_data(i-1)];
-end
-if i >= 5 
-y_ini = [y_data(i-4);y_data(i-3);y_data(i-2);y_data(i-1); y_data(i)];
-u_ini = [u_data(i-4);u_data(i-3);u_data(i-2);u_data(i-1)];
-end
-uf = u_data(i:i+9)';
+
+uf = u_data(i:i+N-1)';
 
 Phi = [Phi tanh_nn(weights,u_ini,uf,y_ini)];
 out_vector = [y_data(i+1);y_data(i+2);y_data(i+3);y_data(i+4);y_data(i+5);y_data(i+6);y_data(i+7);y_data(i+8);y_data(i+9);y_data(i+10)];
@@ -79,10 +71,7 @@ Phi_p = Phi(:,1:length(Phi_f));
 
 
 %% end state definition
-
-
 Theta = Phi_f*pinv(Phi_p)
-
 Pm    = Theta(:,1:n_basis);
 Gamma = Theta(:,n_basis+1:end);
 
@@ -157,7 +146,4 @@ max(abs(eig(A+B*K)))
 MN = InvSet.A
 bN = InvSet.b
 
-save('invariant.mat',"Theta","K","bN","MN","P")
-
-% P = round(P)
-% K = round(K,3)
+save('invariant.mat',"Theta","A","B","K","bN","MN","P","Q","R")

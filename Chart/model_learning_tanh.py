@@ -5,22 +5,18 @@ from scipy.io import savemat
 from sklearn.model_selection import train_test_split
 
 # Hyper parameters
-T_ini = 5
-n_basis = 8
+T_ini = 3
+n_basis = 5
 T = 1000
 in_features = T_ini * 2
 out_features = n_basis
 N = 10
 
 # Load multisine data from matlab
-mat = scipy.io.loadmat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\u_data.mat"
-)
+mat = scipy.io.loadmat("../KDPC_simulations/Chart/u_data.mat")
 u_data = mat["u_data"]
 
-mat = scipy.io.loadmat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\y_data.mat"
-)
+mat = scipy.io.loadmat("../KDPC_simulations/Chart/y_data.mat")
 y_data = mat["y_data"]
 
 # convert data to tensors
@@ -180,51 +176,49 @@ print("test 3")
 
 # save as .mat file
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\weight1.mat",
+    "../KDPC_simulations/Chart/weight1.mat",
     weight1,
 )
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\weight2.mat",
+    "../KDPC_simulations/Chart/weight2.mat",
     weight2,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\weight3.mat",
+    "../KDPC_simulations/Chart/weight3.mat",
     weight3,
 )
 # savemat(r"weight.mat", weight)
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\X_train.mat",
+    "../KDPC_simulations/Chart/X_train.mat",
     X_train,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\y_train.mat",
+    "../KDPC_simulations/Chart/y_train.mat",
     y_train,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\X_test.mat",
+    "../KDPC_simulations/Chart/X_test.mat",
     X_test,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\y_test.mat",
+    "../KDPC_simulations/Chart/y_test.mat",
     y_test,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\X.mat",
+    "../KDPC_simulations/Chart/X.mat",
     X,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Chart\y.mat",
+    "../KDPC_simulations/Chart/y.mat",
     y,
 )
-# savemat(r"weight.mat", weight)
-
 
 print(f"u_data = {u_data}")
 print(f"u_data.shape = {u_data.shape}")

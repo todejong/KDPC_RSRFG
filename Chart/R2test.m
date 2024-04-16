@@ -1,7 +1,5 @@
 close all; clear all; clc;
 
-T_ini = 5;
-n_basis = 10;
 
 
 load('X_test.mat')
@@ -10,7 +8,13 @@ load('weight1.mat')
 load('weight2.mat')
 load('weight3.mat')
 
+n_basis = length(weight1(:,1));
+Tini = (length(weight1(1,:))+1)/2;
+
+
 load('SPCTheta.mat')
+
+
 
 
 X_test = double(X_test)'
@@ -24,9 +28,9 @@ weight3 = double(weight3)
 
 for i = 1:length(X_test(1,:))
     %% test data 
-    test_i = tanh(weight1*X_test(1:2*T_ini-1,i));
+    test_i = tanh(weight1*X_test(1:2*Tini-1,i));
     test_i = tanh(weight2*test_i);
-    y_KDPC_hat(:,i) = weight3*[test_i;X_test(T_ini*2:end,i)];
+    y_KDPC_hat(:,i) = weight3*[test_i;X_test(Tini*2:end,i)];
 
 end 
 

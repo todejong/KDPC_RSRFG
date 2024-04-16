@@ -6,14 +6,8 @@ k0 = 0.33
 hd = 1.1
 Ts = 1/30;
 
-fs = 100;                    % Sampling frequency (samples per second)
-dt = 1/fs;                   % seconds per sample
-StopTime = 1.5;                % seconds
-t = (0:dt:StopTime)';        % seconds
-F = 1;                       % Sine wave frequency (hertz)
-r = 0.5 + sin(2*pi*F*t);           % Reference
-r = 0*ones(length(r),1)
-T_ini = 5
+r = 0*ones(200,1)
+Tini = 3
 
 Q = 10; 
 R=  1;
@@ -37,8 +31,7 @@ Phi = []; Y = [];
 % Yp = Y(1:T_ini,:)
 % Yf = Y(T_ini+1:end ,:)
 
-load('X.mat')
-load('y.mat')
+
 load('X_train.mat')
 load('y_train.mat')
 
@@ -51,9 +44,9 @@ Theta_SPC = y_train*pinv(X_train)
 save('SPCTheta','Theta_SPC')
 
 %% end state definition
-P1 = Theta_SPC(:,1:T_ini-1)
-P2 = Theta_SPC(:,T_ini:2*T_ini-1)
-Gamma = Theta_SPC(:,2*T_ini:end)
+P1 = Theta_SPC(:,1:Tini-1)
+P2 = Theta_SPC(:,Tini:2*Tini-1)
+Gamma = Theta_SPC(:,2*Tini:end)
 
 
 %% Simulate the system
@@ -64,8 +57,8 @@ Omega(end,end) = P;
 
 uSPC = sdpvar(N,1);
 ySPC = sdpvar(N,1);
-yini = sdpvar(T_ini,1); 
-uini = sdpvar(T_ini-1,1);
+yini = sdpvar(Tini,1); 
+uini = sdpvar(Tini-1,1);
 
 objective = ySPC'*Omega*ySPC+(uSPC)'*Psi*(uSPC);  %  + lambda 
 
@@ -95,34 +88,24 @@ NL_part_all = [];
 Z0 = [];
 t_SPC = 0
 
+Y_ini = ones(Tini,1)*ySPC(1)
+U_ini = zeros(Tini-1,1)
+
 %%
 for i = 1:k_sim;
 i
 tic;
-t_SPC(i+1) = i*dt;
+t_SPC(i+1) = i*Ts;
 
 %%% u_ini & y_ini   
 if i == 1
-Y_ini = [ySPC(1);ySPC(1);ySPC(1);ySPC(1); ySPC(i)];
-U_ini = [0;0;0;0];
+Y_ini = [Y_ini(2:end);ySPC(i)];
+U_ini = U_ini;
 end
-if i == 2 
-Y_ini = [ySPC(1);ySPC(1);ySPC(1);ySPC(i-1); ySPC(i)];
-U_ini = [0;0;0;uSPC(i-1)];
+if i >= 2 
+Y_ini = [Y_ini(2:end);ySPC(i)];
+U_ini = [U_ini(2:end);uSPC(i-1)];
 end
-if i == 3 
-Y_ini = [ySPC(1);ySPC(1);ySPC(i-2);ySPC(i-1); ySPC(i)];
-U_ini = [0;0;uSPC(i-2);uSPC(i-1)];
-end
-if i == 4 
-Y_ini = [ySPC(1);ySPC(i-3);ySPC(i-2);ySPC(i-1); ySPC(i)];
-U_ini = [0;uSPC(i-3);uSPC(i-2);uSPC(i-1)];
-end
-if i >= 5 
-Y_ini = [ySPC(i-4);ySPC(i-3);ySPC(i-2);ySPC(i-1); ySPC(i)];
-U_ini = [uSPC(i-4);uSPC(i-3);uSPC(i-2);uSPC(i-1)];
-end
-
 
 OUT = controller({U_ini,Y_ini});
 
@@ -154,7 +137,6 @@ legend('','KDPC','LQR','MPC','Location','northeast');
 ylabel('$x_2$',Interpreter='latex')
 axis tight 
 grid on
-xlim([0,1.4])
 subplot(2,1,2)
 hold on;
 plot(t_SPC(1:end-1),uSPC,'LineWidth',3,'Color',"#0072BD");
@@ -164,7 +146,6 @@ ylabel('$u$',Interpreter='latex')
 legend('KDPC','LQR','MPC','Location','southeast');
 axis tight 
 grid on;
-xlim([0,1.4])
 
 
 save('SPC','t_SPC','ySPC','uSPC')

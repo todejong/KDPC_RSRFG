@@ -13,13 +13,7 @@ R =  1;
 P = 1000*eye(n);
 N = 10; %prediction horizon
 
-fs = 100;                    % Sampling frequency (samples per second)
-dt = 1/fs;                   % seconds per sample
-StopTime = 2;                % seconds
-t = (0:dt:StopTime)';        % seconds
-F = 1;                       % Sine wave frequency (hertz)
-r = 0.5 + sin(2*pi*F*t);           % Reference
-r = 0*ones(length(r),1)
+r = 0*ones(200,1)
 k_sim = length(r)-N;
 
 %% Setup the solver
@@ -58,7 +52,7 @@ yNMPC = xx1MPC;
 
 for i = 1:k_sim;
 i
-t_vec_NMPC(i+1) = i*dt;
+t_vec_NMPC(i+1) = i*Ts;
 tic;
 X0 = [xx1MPC(i);xx2MPC(i)];
 
