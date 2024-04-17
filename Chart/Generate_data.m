@@ -20,15 +20,7 @@ u_data = idinput([Period 1 NumPeriod],'sine',Band,Range,SineData)';
 % u_data = zeros(1,length(u_data))
 
 % u_data = block+noise
-
-u_data_test = u_data(TrainTest*end+1:end);
-u_data = u_data(1:TrainTest*end);
-
-figure()
-plot(u_data_test)
-
-figure()
-plot(u_data)
+t = 0:Ts:(length(u_data)-1)*Ts
 
 
 x1 = 0
@@ -40,20 +32,15 @@ for k = 1:length(u_data)
     x2(k+1) = x2(k) - k0*Ts/M*exp(-x1(k))*x1(k) - Ts*hd/M*x2(k) + Ts/M*u_data(k); 
     
     y_data(k) = x1(k);
-    t(k) = Ts*k;
 
 end 
 
-x1 = 0
-x2 = 0
-
-for k = 1:length(u_data_test)
-    x1(k+1) = x1(k) + Ts*x2(k);
-    x2(k+1) = x2(k) - k0*Ts/M*exp(-x1(k))*x1(k) - Ts*hd/M*x2(k) + Ts/M*u_data_test(k);   
-    y_data_test(k) = x1(k);
-end 
-
-
+u_data_test = u_data(TrainTest*end+1:end);
+y_data_test = y_data(TrainTest*end+1:end);
+t_test = t(TrainTest*end+1:end);
+u_data = u_data(1:TrainTest*end);
+y_data = y_data(1:TrainTest*end);
+t_train = t(1:TrainTest*end);
 
 curr_fig = figure;
 curr_axes1=axes('Parent',curr_fig,'FontSize',11,'FontName','Times New Roman');
@@ -61,14 +48,19 @@ box(curr_axes1,'on');
 hold(curr_axes1,'all');
 %your plots
 subplot(2,1,1)
-plot(t,u_data,'LineWidth',1)
+hold on
+plot(t_train,u_data,'LineWidth',1)
+plot(t_test,u_data_test,'LineWidth',1)
 ylabel('$u(k)$',Interpreter='latex')
-axis tight
+legend('train','test',Interpreter='latex')
+xlim([t(1), t(end)])
 subplot(2,1,2)
-plot(t,y_data(1,:),'LineWidth',1)
+hold on
+plot(t_train,y_data(1,:),'LineWidth',1)
+plot(t_test,y_data_test(1,:),'LineWidth',1)
 ylabel('$y(k)$',Interpreter='latex')
 xlabel('$t$[s]',Interpreter='latex')
-axis tight
+xlim([t(1), t(end)])
 %your plots
 set(gca,'TickLabelInterpreter','Latex')
 set(curr_fig,'Units','centimeters','PaperSize',[20.98 29.68],'PaperUnits','centimeters','PaperPosition',[0 0 12 8])

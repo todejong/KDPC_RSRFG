@@ -7,7 +7,7 @@ hd = 1.1;       % damping factor
 Ts = 1/30;      % Sampling time 
 
 Tlength = 200;              % Experiment length
-lambda = 1e+12;              % Cost for the initial condition
+lambda = 1e+10;              % Cost for the initial condition
 r = 0*ones(Tlength,1);      % Reference signal
 
 
