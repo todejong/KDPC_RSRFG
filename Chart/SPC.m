@@ -7,27 +7,36 @@ hd = 1.1
 Ts = 1/30;
 
 r = 0*ones(200,1)
-Tini = 5
 
-Q = 1; 
-R=  0.001;
+Q = 10; 
+R=  1;
 P = 1000;
 
 %%
-N = 10; %prediction horizon
+% Load the weigths of the neural network:
+load('data/weight1.mat')
+load('data/weight2.mat')
+load('data/weight3.mat')
+
+% Dimensions of the network
+Tini = (length(weight1(1,:))+1)/2;      % Number of time shifts for inputs and outputs
+N = length(weight3(:,1));               % Prediction horizon
+
+clear weight1 weight2 weight3
+
 k_sim = length(r)-N;
 
 %% recompute Theta 
-load('X_train.mat')
-load('y_train.mat')
+load('data/X.mat')
+load('data/y.mat')
 
-X_train = double(X_train).'
-y_train = double(y_train).'
+X = double(X).'
+y = double(y).'
 
 
 %% Learn the theta state model
-Theta_SPC = y_train*pinv(X_train)
-save('SPCTheta','Theta_SPC')
+Theta_SPC = y*pinv(X)
+save('data/SPCTheta','Theta_SPC')
 
 %% end state definition
 P1 = Theta_SPC(:,1:Tini-1)
@@ -63,9 +72,9 @@ options = sdpsettings('solver', ['QUADPROG' ...
 controller = optimizer(constraints, objective, options, Parameters, Outputs);
 
 %% initial conditions
-ySPC(1) = -0.3;
+ySPC(1) = -0.4;
 xx1(1) = ySPC(1);
-xx2(1) = -0.2;
+xx2(1) = 0;
 uSPC = [];
 th=[];
 NL_part_all = [];
@@ -132,4 +141,4 @@ axis tight
 grid on;
 
 
-save('SPC','t_SPC','ySPC','uSPC')
+save('data/SPC','t_SPC','ySPC','uSPC')

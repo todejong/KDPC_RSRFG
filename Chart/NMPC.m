@@ -8,10 +8,17 @@ Ts = 1/30;
 n = 2
 m = 1
 
-Q = [1,0;0,1] 
-R =  0.001;
+Q = [10,0;0,10] 
+R =  1;
 P = 1000*eye(n);
-N = 10; %prediction horizon
+
+
+% Dimensions of the network
+load('data/weight3.mat')
+N = length(weight3(:,1));               % Prediction horizon
+clear weight3
+
+
 
 r = 0*ones(200,1)
 k_sim = length(r)-N;
@@ -45,8 +52,8 @@ controller = optimizer(constraints, objective, options, Parameters, Outputs);
 
 
 %% initial conditions
-xx1MPC(1) = -0.3;
-xx2MPC(1) = -0.2;
+xx1MPC(1) = -0.4;
+xx2MPC(1) = 0;
 yNMPC = xx1MPC;
 
 
@@ -93,4 +100,4 @@ legend('KMPC','LQR','Location','southeast');
 axis tight 
 grid on;
 
-save('NMPC','yNMPC','uNMPC','t_vec_NMPC')
+save('data/NMPC','yNMPC','uNMPC','t_vec_NMPC')

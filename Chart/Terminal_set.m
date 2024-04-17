@@ -2,25 +2,25 @@
 clc; close all; clear all;
 
 % use this for noiseless case
-load('u_data.mat')
-load('y_data.mat')
+load('data/u_data.mat')
+load('data/y_data.mat')
 
 
-load('weight1.mat')
-load('weight2.mat')
-load('weight3.mat')
+load('data/weight1.mat')
+load('data/weight2.mat')
+load('data/weight3.mat')
 
 weights = struct('weight1',weight1,'weight2',weight2,'weight3',weight3);
 
 
 
 %%
-n_basis = length(weight1(:,1));
-Tini = (length(weight1(1,:))+1)/2;
+n_basis = length(weight1(:,1));         % Number of neurons per layer
+Tini = (length(weight1(1,:))+1)/2;      % Number of time shifts for inputs and outputs
+N = length(weight3(:,1));               % Prediction horizon
 Q = 10*eye(n_basis); 
 R=  1;
 
-N = 10; %prediction horizon
 Phi = []; Y = [];
 
 y_ini = ones(Tini,1)*y_data(1)
@@ -40,8 +40,6 @@ end
 uf = u_data(i:i+N-1)';
 
 Phi = [Phi tanh_nn(weights,u_ini,uf,y_ini)];
-out_vector = [y_data(i+1);y_data(i+2);y_data(i+3);y_data(i+4);y_data(i+5);y_data(i+6);y_data(i+7);y_data(i+8);y_data(i+9);y_data(i+10)];
-% Y = [Y out_vector];
 end
 
 
@@ -137,4 +135,4 @@ max(abs(eig(A+B*K)))
 MN = InvSet.A
 bN = InvSet.b
 
-save('invariant.mat',"Theta","A","B","K","bN","MN")
+save('data/invariant.mat',"Theta","A","B","K","bN","MN")

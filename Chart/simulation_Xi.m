@@ -12,23 +12,23 @@ r = 0*ones(Tlength,1);      % Reference signal
 
 
 % Load the weigths of the neural network:
-load('weight1.mat')
-load('weight2.mat')
-load('weight3.mat')
+load('data/weight1.mat')
+load('data/weight2.mat')
+load('data/weight3.mat')
 weights = struct('weight1',weight1,'weight2',weight2,'weight3',weight3);
 
 % Dimensions of the network
 n_basis = length(weight1(:,1));         % Number of neurons per layer
 Tini = (length(weight1(1,:))+1)/2;      % Number of time shifts for inputs and outputs
 N = length(weight3(:,1));               % Prediction horizon
-Q = 1*eye(n_basis); 
-R=  0.001;
+Q = 10*eye(n_basis); 
+R=  1;
 Pin = 1/1000;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Relearn P %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-load('invariant.mat')    % Load the invariant set and cost matrices
+load('data/invariant.mat')    % Load the invariant set and cost matrices
 
 O_var = sdpvar(n_basis,n_basis,'symmetric','real')
 
@@ -91,8 +91,8 @@ th=[];
 NL_part_all = [];
 Z0 = [];
 t_vec = 0
-y(1) = -0.3;
-xx2(1) = -0.2;
+y(1) = -0.4;
+xx2(1) = -0.0;
 xx1(1) = y(1);
 u_mpc = 0;
 y_ini = ones(Tini,1)*y(1)
@@ -149,8 +149,8 @@ end
 
 
 %% New plot
-load('SPC.mat')
-load('NMPC.mat')
+load('data/SPC.mat')
+load('data/NMPC.mat')
 
 curr_fig = figure;
 curr_axes1=axes('Parent',curr_fig,'FontSize',11,'FontName','Times New Roman');
@@ -185,8 +185,8 @@ xlim([0,6])
 set(gca,'TickLabelInterpreter','Latex')
 set(curr_fig,'Units','centimeters','PaperSize',[20.98 29.68],'PaperUnits','centimeters','PaperPosition',[0 0 12 8])
 % you can change 9 and 6.3 to change the ratios of the plot...
-savefig('2chart.fig') %change it with the name you want to give to the .fig plot
-print -depsc 2chart %change it with the name you want to give to the .eps figure
+savefig('figures/2chart.fig') %change it with the name you want to give to the .fig plot
+print -depsc figures/2chart %change it with the name you want to give to the .eps figure
 
 
 
@@ -214,8 +214,8 @@ xlim([0,6])
 set(gca,'TickLabelInterpreter','Latex')
 set(curr_fig,'Units','centimeters','PaperSize',[20.98 29.68],'PaperUnits','centimeters','PaperPosition',[0 0 12 8])
 % you can change 9 and 6.3 to change the ratios of the plot...
-savefig('2chart2.fig') %change it with the name you want to give to the .fig plot
-print -depsc 2chart2 %change it with the name you want to give to the .eps figure
+savefig('figures/2chart2.fig') %change it with the name you want to give to the .fig plot
+print -depsc figures/2chart2 %change it with the name you want to give to the .eps figure
 
 
 
