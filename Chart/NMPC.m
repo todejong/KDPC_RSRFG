@@ -12,13 +12,10 @@ Q = [10,0;0,10]
 R =  1;
 P = 1000*eye(n);
 
-
 % Dimensions of the network
 load('data/weight3.mat')
 N = length(weight3(:,1));               % Prediction horizon
 clear weight3
-
-
 
 r = 0*ones(200,1)
 k_sim = length(r)-N;

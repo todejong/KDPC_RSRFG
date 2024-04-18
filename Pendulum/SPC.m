@@ -8,61 +8,41 @@ g = 9.81  ;      % acceleration of gravity
 J = 1/3*M*L^2 ;  % moment of inertia
 Ts = 1/30;
 
-fs = 100;                    % Sampling frequency (samples per second)
-dt = 1/fs;                   % seconds per sample
-StopTime = 1.5;                % seconds
-t = (0:dt:StopTime)';        % seconds
-F = 1;                       % Sine wave frequency (hertz)
-r = 0.5 + sin(2*pi*F*t);           % Reference
-r = 0*ones(length(r),1)
-T_ini = 5
+r = 0*ones(200,1)
 
 Q = 10; 
-R=  1;
-P = 1000;
-lambda = 1e+7;
-
-% use this for noiseless case
-% load('u_data.mat')
-% load('y_data.mat')
+R=  0.01;
+P = 10000;
 
 %%
-N = 10; %prediction horizon
+% Load the weigths of the neural network:
+load('data/weight1.mat')
+load('data/weight2.mat')
+load('data/weight3.mat')
+
+% Dimensions of the network
+Tini = (length(weight1(1,:))+1)/2;      % Number of time shifts for inputs and outputs
+N = length(weight3(:,1));               % Prediction horizon
+
+clear weight1 weight2 weight3
+
 k_sim = length(r)-N;
-Phi = []; Y = [];
 
 %% recompute Theta 
-% for i = 1:length(u_data)-T_ini-N
-% U(:,i) = u_data(i:T_ini+N+i-2);
-% Y(:,i) = y_data(i:T_ini+i+N-1);
-% end
-% Up = U(1:T_ini-1,:)
-% Uf = U(T_ini:end ,:)
-% Yp = Y(1:T_ini,:)
-% Yf = Y(T_ini+1:end ,:)
-% 
-% X_comp = [Up;Yp;Uf];
-% Y_comp = Yf
+load('data/X.mat')
+load('data/y.mat')
 
-load('X.mat')
-load('y.mat')
-load('X_train.mat')
-load('y_train.mat')
-
-X_train = double(X_train).'
-y_train = double(y_train).'
+X = double(X).'
+y = double(y).'
 
 %% Learn the theta state model
-Theta_SPC = y_train*pinv(X_train)
-save('SPCTheta','Theta_SPC')
-
-
+Theta_SPC = y*pinv(X)
+save('data/SPCTheta','Theta_SPC')
 
 %% end state definition
-
-P1 = Theta_SPC(:,1:T_ini-1)
-P2 = Theta_SPC(:,T_ini:2*T_ini-1)
-Gamma = Theta_SPC(:,2*T_ini:end)
+P1 = Theta_SPC(:,1:Tini-1)
+P2 = Theta_SPC(:,Tini:2*Tini-1)
+Gamma = Theta_SPC(:,2*Tini:end)
 
 
 %% Simulate the system
@@ -73,8 +53,8 @@ Omega(end,end) = P;
 
 uSPC = sdpvar(N,1);
 ySPC = sdpvar(N,1);
-yini = sdpvar(T_ini,1); 
-uini = sdpvar(T_ini-1,1);
+yini = sdpvar(Tini,1); 
+uini = sdpvar(Tini-1,1);
 
 objective = ySPC'*Omega*ySPC+(uSPC)'*Psi*(uSPC);  %  + lambda 
 
@@ -95,43 +75,31 @@ controller = optimizer(constraints, objective, options, Parameters, Outputs);
 %% initial conditions
 ySPC(1) = 0.2;
 xx2(1) = ySPC(1);
-omega = 7;
-xx1(1) = omega;
-u_mpc = 0;
+xx1(1) = 7;
 uSPC = [];
 th=[];
 NL_part_all = [];
 Z0 = [];
 t_SPC = 0
 
+Y_ini = ones(Tini,1)*ySPC(1)
+U_ini = zeros(Tini-1,1)
+
 %%
 for i = 1:k_sim;
 i
 tic;
-t_SPC(i+1) = i*dt;
+t_SPC(i+1) = i*Ts;
 
 %%% u_ini & y_ini   
 if i == 1
-Y_ini = [0;0;0;0; ySPC(i)];
-U_ini = [0;0;0;0];
+Y_ini = [Y_ini(2:end);ySPC(i)];
+U_ini = U_ini;
 end
-if i == 2 
-Y_ini = [0;0;0;ySPC(i-1); ySPC(i)];
-U_ini = [0;0;0;uSPC(i-1)];
+if i >= 2 
+Y_ini = [Y_ini(2:end);ySPC(i)];
+U_ini = [U_ini(2:end);uSPC(i-1)];
 end
-if i == 3 
-Y_ini = [0;0;ySPC(i-2);ySPC(i-1); ySPC(i)];
-U_ini = [0;0;uSPC(i-2);uSPC(i-1)];
-end
-if i == 4 
-Y_ini = [0;ySPC(i-3);ySPC(i-2);ySPC(i-1); ySPC(i)];
-U_ini = [0;uSPC(i-3);uSPC(i-2);uSPC(i-1)];
-end
-if i >= 5 
-Y_ini = [ySPC(i-4);ySPC(i-3);ySPC(i-2);ySPC(i-1); ySPC(i)];
-U_ini = [uSPC(i-4);uSPC(i-3);uSPC(i-2);uSPC(i-1)];
-end
-
 
 OUT = controller({U_ini,Y_ini});
 
@@ -163,7 +131,6 @@ legend('','KDPC','LQR','MPC','Location','northeast');
 ylabel('$x_2$',Interpreter='latex')
 axis tight 
 grid on
-xlim([0,1.4])
 subplot(2,1,2)
 hold on;
 plot(t_SPC(1:end-1),uSPC,'LineWidth',3,'Color',"#0072BD");
@@ -173,7 +140,6 @@ ylabel('$u$',Interpreter='latex')
 legend('KDPC','LQR','MPC','Location','southeast');
 axis tight 
 grid on;
-xlim([0,1.4])
 
 
-save('SPC','t_SPC','ySPC','uSPC')
+save('data/SPC','t_SPC','ySPC','uSPC')

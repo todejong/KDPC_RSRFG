@@ -5,12 +5,11 @@ from scipy.io import savemat
 from sklearn.model_selection import train_test_split
 
 # Hyper parameters
-T_ini = 5
-n_basis = 15
-T = 1000
+T_ini = 3
+n_basis = 10
 in_features = T_ini * 2
 out_features = n_basis
-N = 10
+N = 15
 
 # System parameters
 M = 1  # [kg]
@@ -21,14 +20,10 @@ Ts = 1 / 30  # [s]
 J = M * L**2 / 3
 
 # Load multisine data from matlab
-mat = scipy.io.loadmat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\u_data.mat"
-)
+mat = scipy.io.loadmat("../KDPC_simulations/Pendulum/data/u_data.mat")
 u_data = mat["u_data"]
 
-mat = scipy.io.loadmat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\y_data.mat"
-)
+mat = scipy.io.loadmat("../KDPC_simulations/Pendulum/data/y_data.mat")
 y_data = mat["y_data"]
 
 # convert data to tensors
@@ -65,7 +60,7 @@ Y_ini = torch.transpose(y_data[0:T_ini], 0, 1)
 Y_1_N = torch.transpose(y_data[T_ini : T_ini + N], 0, 1)
 
 
-for i in range(T - T_ini - 1 - N):
+for i in range(len(y_data) - T_ini - 1 - N):
     if i < 100:
         print(i)
     U_ini = torch.cat((U_ini, torch.transpose(u_data[i + 1 : T_ini + i], 0, 1)), 0)
@@ -79,15 +74,19 @@ for i in range(T - T_ini - 1 - N):
 X = torch.cat((U_ini, Y_ini, U_0_Nm1), 1)
 y = Y_1_N
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=41
-)
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, test_size=0.2, random_state=41
+# )
 
-X_train_1 = X_train[:, 0 : (2 * T_ini - 1)]
-X_train_2 = X_train[:, (2 * T_ini - 1) :]
+# X_train_1 = X_train[:, 0 : (2 * T_ini - 1)]
+# X_train_2 = X_train[:, (2 * T_ini - 1) :]
 
-X_test_1 = X_test[:, 0 : (2 * T_ini - 1)]
-X_test_2 = X_test[:, (2 * T_ini - 1) :]
+# X_test_1 = X_test[:, 0 : (2 * T_ini - 1)]
+# X_test_2 = X_test[:, (2 * T_ini - 1) :]
+
+
+X1 = X[:, 0 : (2 * T_ini - 1)]
+X2 = X[:, (2 * T_ini - 1) :]
 
 
 # Create the neural network
@@ -123,10 +122,10 @@ losses = []
 
 for i in range(epochs):
     # Go forward and get a prediction
-    y_pred = model.forward(X_train_1, X_train_2)  # get results
+    y_pred = model.forward(X1, X2)  # get results
 
     # Measure the loss/error,
-    loss = criterion(y_pred, y_train)
+    loss = criterion(y_pred, y)
 
     # keep track of our losses
     losses.append(loss.detach().numpy())
@@ -151,18 +150,18 @@ plt.show()
 print(f"model.parameters() = {model.parameters()}")
 
 # evaluate the model on the test data set
-with torch.no_grad():  # turn off backpropagation
-    y_eval = model.forward(X_test_1, X_test_2)  # are features from our test set
-    loss = criterion(y_eval, y_test)  # Find the loss or error
+# with torch.no_grad():  # turn off backpropagation
+#     y_eval = model.forward(X_test_1, X_test_2)  # are features from our test set
+#     loss = criterion(y_eval, y_test)  # Find the loss or error
 
-# print the predicted output and the test data
-print(f"y_eval = {y_eval}")
-print(f"y_test = {y_test}")
-print(f"y_eval-y_test = {y_eval-y_test}")
+# # print the predicted output and the test data
+# print(f"y_eval = {y_eval}")
+# print(f"y_test = {y_test}")
+# print(f"y_eval-y_test = {y_eval-y_test}")
 
 
-print("test 1")
-print(f"model.l_1.parameters {model.l_1.parameters}")
+# print("test 1")
+# print(f"model.l_1.parameters {model.l_1.parameters}")
 
 # Convert the model parameters to numpy arrays
 weight1 = model.l_1.weight.detach().numpy()
@@ -178,57 +177,34 @@ print("test 2")
 weight1 = {"weight1": weight1}
 weight2 = {"weight2": weight2}
 weight3 = {"weight3": weight3}
-X_train = {"X_train": X_train}
-y_train = {"y_train": y_train}
 X = {"X": X}
 y = {"y": y}
-X_test = {"X_test": X_test}
-y_test = {"y_test": y_test}
 
 print("test 3")
 
 # save as .mat file
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\weight1.mat",
+    "../KDPC_simulations/Pendulum/data/weight1.mat",
     weight1,
 )
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\weight2.mat",
+    "../KDPC_simulations/Pendulum/data/weight2.mat",
     weight2,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\weight3.mat",
+    "../KDPC_simulations/Pendulum/data/weight3.mat",
     weight3,
 )
 
-savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\X_train.mat",
-    X_train,
-)
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\y_train.mat",
-    y_train,
-)
-
-savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\X_test.mat",
-    X_test,
-)
-
-savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\y_test.mat",
-    y_test,
-)
-
-savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\X.mat",
+    "../KDPC_simulations/Pendulum/data/X.mat",
     X,
 )
 
 savemat(
-    r"C:\Users\20183249\OneDrive - TU Eindhoven\Documents\PhD\Year_1\CDC2024\ExamplesVersionControl\Pendulum\y.mat",
+    "../KDPC_simulations/Pendulum/data/y.mat",
     y,
 )
 # savemat(r"weight.mat", weight)

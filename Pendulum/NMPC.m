@@ -11,20 +11,16 @@ n = 2
 m = 1
 
 Q = [10,0;0,10] 
-R =  1;
-P = 1000*eye(n);
-N = 10; %prediction horizon
+R =  0.01;
+P = 10000*eye(n);
 
-fs = 100;                    % Sampling frequency (samples per second)
-dt = 1/fs;                   % seconds per sample
-StopTime = 2;                % seconds
-t = (0:dt:StopTime)';        % seconds
-F = 1;                       % Sine wave frequency (hertz)
-r = 0.5 + sin(2*pi*F*t);           % Reference
-r = 0*ones(length(r),1)
+% Dimensions of the network
+load('data/weight3.mat')
+N = length(weight3(:,1));               % Prediction horizon
+clear weight3
+
+r = 0*ones(200,1)
 k_sim = length(r)-N;
-
-%% construct Gamma and Psi
 
 %% Setup the solver
 u = sdpvar(N,1);
@@ -62,7 +58,7 @@ yNMPC = xx2MPC;
 
 for i = 1:k_sim;
 i
-t_vec_NMPC(i+1) = i*dt;
+t_vec_NMPC(i+1) = i*Ts;
 tic;
 X0 = [xx1MPC(i);xx2MPC(i)];
 
@@ -103,4 +99,4 @@ legend('KMPC','LQR','Location','southeast');
 axis tight 
 grid on;
 
-save('NMPC','yNMPC','uNMPC','t_vec_NMPC')
+save('data/NMPC','yNMPC','uNMPC','t_vec_NMPC')

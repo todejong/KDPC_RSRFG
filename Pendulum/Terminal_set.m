@@ -1,74 +1,47 @@
 %% N-step ahead predictor
 clc; close all; clear all;
 
-M = 1.   ;       % mass of the pendulum
-L = 1.   ;       % lenght of the pendulum
-b = 0.1  ;       % friction coefficient
-g = 9.81  ;      % acceleration of gravity
-J = 1/3*M*L^2 ;  % moment of inertia
-Ts = 1/30;
-
-n_basis = 15;
-
-fs = 100;                    % Sampling frequency (samples per second)
-dt = 1/fs;                   % seconds per sample
-StopTime = 1;                % seconds
-t = (0:dt:StopTime)';        % seconds
-F = 1;                       % Sine wave frequency (hertz)
-r = 0.5 + sin(2*pi*F*t);           % Reference
-r = 0*ones(length(r),1)
-
-
-Q = 10*eye(n_basis); 
-R=  1;
-lambda = 1e+5;
-
 % use this for noiseless case
-load('u_data.mat')
-load('y_data.mat')
+load('data/u_data.mat')
+load('data/y_data.mat')
 
 
-load('weight1.mat')
-load('weight2.mat')
-load('weight3.mat')
+load('data/weight1.mat')
+load('data/weight2.mat')
+load('data/weight3.mat')
 
 weights = struct('weight1',weight1,'weight2',weight2,'weight3',weight3);
 
 
+
 %%
-N = 10; %prediction horizon
-k_sim = length(r)-N;
+n_basis = length(weight1(:,1));         % Number of neurons per layer
+Tini = (length(weight1(1,:))+1)/2;      % Number of time shifts for inputs and outputs
+N = length(weight3(:,1));               % Prediction horizon
+Q = 10*eye(n_basis); 
+R=  1;
+
 Phi = []; Y = [];
+
+y_ini = ones(Tini,1)*y_data(1)
+u_ini = zeros(Tini-1,1)
+
 
 %% recompute Theta 
 for i = 1:length(y_data)-N;
 if i == 1
-y_ini = [0;0;0;0; y_data(i)];
-u_ini = [0;0;0;0];
+y_ini = [y_ini(2:end);y_data(i)];
+u_ini = u_ini;
 end
-if i == 2 
-y_ini = [0;0;0;y_data(i-1); y_data(i)];
-u_ini = [0;0;0;u_data(i-1)];
+if i >= 2 
+y_ini = [y_ini(2:end);y_data(i)];
+u_ini = [u_ini(2:end);u_data(i-1)];
 end
-if i == 3 
-y_ini = [0;0;y_data(i-2);y_data(i-1); y_data(i)];
-u_ini = [0;0;u_data(i-2);u_data(i-1)];
-end
-if i == 4 
-y_ini = [0;y_data(i-3);y_data(i-2);y_data(i-1); y_data(i)];
-u_ini = [0;u_data(i-3);u_data(i-2);u_data(i-1)];
-end
-if i >= 5 
-y_ini = [y_data(i-4);y_data(i-3);y_data(i-2);y_data(i-1); y_data(i)];
-u_ini = [u_data(i-4);u_data(i-3);u_data(i-2);u_data(i-1)];
-end
-uf = u_data(i:i+9)';
+
+uf = u_data(i:i+N-1)';
 
 Phi = [Phi tanh_nn(weights,u_ini,uf,y_ini)];
-out_vector = [y_data(i+1);y_data(i+2);y_data(i+3);y_data(i+4);y_data(i+5);y_data(i+6);y_data(i+7);y_data(i+8);y_data(i+9);y_data(i+10)];
-% Y = [Y out_vector];
 end
-
 
 %% Learn the theta state model
 
@@ -87,10 +60,7 @@ Phi_p = Phi(:,1:length(Phi_f));
 
 
 %% end state definition
-
-
 Theta = Phi_f*pinv(Phi_p)
-
 Pm    = Theta(:,1:n_basis);
 Gamma = Theta(:,n_basis+1:end);
 
@@ -99,8 +69,11 @@ Gamma = Theta(:,n_basis+1:end);
 A = Pm(1:n_basis,1:n_basis)
 B = Gamma(1:n_basis,1)
 Co = ctrb(A,B)
+
+
 rank(Co)
 
+[~,E,~] = svd(Co);
 %% Terminal set
  % clearvars -except A B n_basis
 
@@ -114,7 +87,7 @@ M_var = [O_var,         (A*O_var+B*Y_var).',        O_var,                      
 
 
 objective = [ norm(O_var - 10*eye(n_basis)) ];
-constraints = [M_var >= 0];
+constraints = [M_var >= 0.000001*eye(1)];
 options = sdpsettings('solver', 'mosek', 'verbose', 0, 'debug', 0)
 
 optimize(constraints,objective,options)
@@ -165,5 +138,5 @@ max(abs(eig(A+B*K)))
 MN = InvSet.A
 bN = InvSet.b
 
-save('invariant.mat',"bN","MN","K","A","B","P","Theta")
+save('data/invariant.mat',"Theta","A","B","K","bN","MN")
 
