@@ -90,7 +90,6 @@ u = [];
 th=[];
 NL_part_all = [];
 Z0 = [];
-E_k = []
 t_vec = 0
 y(1) = -0.4;
 xx2(1) = -0.0;
@@ -124,7 +123,6 @@ if i < Tini
 Z_part = Nl_part;
 else 
 Z_part = Zkm1;
-E_k = [E_k, Nl_part-Z_part];
 end 
 
 %%% mpc sol
@@ -151,7 +149,7 @@ end
 
 
 %% New plot
-% load('data/SPC.mat')
+load('data/SPC.mat')
 load('data/NMPC.mat')
 
 curr_fig = figure;
@@ -163,9 +161,9 @@ subplot(2,1,1)
 hold on;
 plot(t_vec,r(1:length(t_vec)).','k','LineWidth',1.5);
 plot(t_vec,y,'LineWidth',3,'Color',"#0072BD");
-% plot(t_SPC,ySPC,'LineWidth',3,'Color',"#EDB120");
-plot(t_vec_NMPC,yNMPC,'LineWidth',3,'Color',"#EDB120");
-legend('','KDPC','SPC','Location','southeast');
+plot(t_SPC,ySPC,'LineWidth',3,'Color',"#EDB120");
+plot(t_vec_NMPC,yNMPC,'LineWidth',3,'Color',"#D95319");
+legend('','KDPC','SPC','NMPC','Location','southeast');
 ylabel('$x_1$',Interpreter='latex')
 axis tight 
 grid on
@@ -173,11 +171,11 @@ xlim([0,6])
 subplot(2,1,2)
 hold on;
 plot(t_vec(1:end-1),u,'LineWidth',3,'Color',"#0072BD");
-% plot(t_SPC(1:end-1),uSPC,'LineWidth',3,'Color',"#EDB120");
-plot(t_vec_NMPC(1:end-1),uNMPC,'LineWidth',3,'Color',"#EDB120");
+plot(t_SPC(1:end-1),uSPC,'LineWidth',3,'Color',"#EDB120");
+plot(t_vec_NMPC(1:end-1),uNMPC,'LineWidth',3,'Color',"#D95319");
 yline(0.5,'r--','LineWidth',0.5)
 yline(-0.5,'r--','LineWidth',0.5)
-legend('KDPC','NMPC','','','Location','southeast');
+legend('KDPC','SPC','NMPC','','','Location','southeast');
 ylabel('$u$',Interpreter='latex')
 xlabel('$t$[s]',Interpreter='latex')
 axis tight 
@@ -197,29 +195,21 @@ curr_axes1=axes('Parent',curr_fig,'FontSize',11,'FontName','Times New Roman');
 box(curr_axes1,'on');
 hold(curr_axes1,'all');
 %your plots
-subplot(3,1,1)
+subplot(2,1,1)
 plot(t_vec(1:end-1),Xi,'LineWidth',3,'Color',"#0072BD")
 ylabel('$\xi$',Interpreter='latex')
 grid on;
 xlim([0,6])
-subplot(3,1,2)
+subplot(2,1,2)
 hold on
 for i = 1:length(NL_part_all(:,1))
 plot(t_vec(1:end-1),NL_part_all(i,:),'LineWidth',3)
 end
 ylabel('$\varphi_i$',Interpreter='latex')
+xlabel('$t [s]$',Interpreter='latex')
 axis tight 
 grid on;
 xlim([0,6])
-subplot(3,1,3)
-hold on
-for i = 1:length(E_k(:,1))
-plot(E_k(i,:),'LineWidth',3)
-end 
-ylabel('$e(k)$',Interpreter='latex')
-xlabel('$t [s]$',Interpreter='latex')
-axis tight
-grid on;
 %your plots
 set(gca,'TickLabelInterpreter','Latex')
 set(curr_fig,'Units','centimeters','PaperSize',[20.98 29.68],'PaperUnits','centimeters','PaperPosition',[0 0 12 8])
