@@ -95,6 +95,7 @@ u = [];
 th=[];
 NL_part_all = [];
 Z0 = [];
+E_k = [];
 t_vec = 0
 
 y_ini = ones(Tini,1)*y(1)
@@ -124,6 +125,7 @@ if i < Tini
 Z_part = Nl_part;
 else 
 Z_part = Zkm1;
+E_k = [E_k, (Zkm1-Nl_part)];
 end 
 
 %%% mpc sol
@@ -161,8 +163,8 @@ subplot(2,1,1)
 hold on;
 plot(t_vec,r(1:length(t_vec)),'LineWidth',3,'Color',"#7E2F8E");
 plot(t_vec,y,'LineWidth',3,'Color',"#0072BD");
-plot(t_SPC,ySPC,'LineWidth',3,'Color',"#EDB120");
-plot(t_vec_NMPC,yNMPC,'LineWidth',3,'Color',"#D95319");
+% plot(t_SPC,ySPC,'LineWidth',3,'Color',"#EDB120");
+plot(t_vec_NMPC,yNMPC,'LineWidth',3,'Color',"#EDB120");
 legend('','KDPC','SPC','NMPC','Location','northeast');
 ylabel('$x_2$',Interpreter='latex')
 axis tight 
@@ -171,8 +173,8 @@ xlim([0,3])
 subplot(2,1,2)
 hold on;
 plot(t_vec(1:length(u)),u,'LineWidth',3,'Color',"#0072BD");
-plot(t_SPC(1:end-1),uSPC,'LineWidth',3,'Color',"#EDB120");
-plot(t_vec_NMPC(1:end-1),uNMPC,'LineWidth',3,'Color',"#D95319");
+% plot(t_SPC(1:end-1),uSPC,'LineWidth',3,'Color',"#EDB120");
+plot(t_vec_NMPC(1:end-1),uNMPC,'LineWidth',3,'Color',"#EDB120");
 legend('KDPC','SPC','NMPC','','','Location','northeast');
 ylabel('$u$',Interpreter='latex')
 axis tight 
@@ -192,17 +194,26 @@ curr_axes1=axes('Parent',curr_fig,'FontSize',11,'FontName','Times New Roman');
 box(curr_axes1,'on');
 hold(curr_axes1,'all');
 %your plots
-subplot(2,1,1)
+subplot(3,1,1)
 plot(t_vec(1:end-1),Xi,'LineWidth',3,'Color',"#0072BD")
 ylabel('$\xi$',Interpreter='latex')
 grid on;
 xlim([0,3])
-subplot(2,1,2)
+subplot(3,1,2)
 hold on
 for i = 1:length(NL_part_all(:,1))
 plot(t_vec(1:end-1),NL_part_all(i,:),'LineWidth',3)
 end
 ylabel('$\varphi_i$',Interpreter='latex')
+axis tight 
+grid on;
+xlim([0,3])
+subplot(3,1,3)
+hold on
+for i = 1:length(NL_part_all(:,1))
+plot(t_vec(1:end-Tini),E_k(i,:),'LineWidth',3)
+end
+ylabel('$(e(k))$',Interpreter='latex')
 xlabel('$t [s]$',Interpreter='latex')
 axis tight 
 grid on;
